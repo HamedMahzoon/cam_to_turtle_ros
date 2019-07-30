@@ -1,4 +1,10 @@
 <launch>
+	<arg name="launch_roswww" default="true" />
+	<group if="$(arg launch_roswww)">
+	       <include file="$(find roswww)/launch/roswww.launch">
+	       		<arg name="port" value="8085" />
+	       </include>
+	</group>
 	<!--group ns="ns1"-->
 	      <node pkg="turtlesim" type="turtlesim_node" name="kame1" >
 	      	    <remap from="turtle1/cmd_vel" to="vel_kame1"/>

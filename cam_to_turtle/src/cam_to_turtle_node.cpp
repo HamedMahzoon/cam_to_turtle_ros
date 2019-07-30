@@ -5,6 +5,10 @@
 
 #include <sstream>
 
+#include <iostream>
+#include <fstream>
+using namespace std;
+
 class SubscribeAndPublish
 {
 public:
@@ -22,34 +26,49 @@ public:
     
     twistMsg.linear.x = 0; twistMsg.linear.y = 0; twistMsg.linear.z = 0;
     twistMsg.angular.x = 0; twistMsg.angular.y = 0; twistMsg.angular.z = 0;
+
+    command = "none";
+    writeToFile();
   }
 
   void getCamCallback (const std_msgs::String::ConstPtr& msg)
   {
-    //msg->data.c_str();
+
     ROS_INFO("I heard: [%s]", msg->data.c_str());  
-    //PUBLISHED_MESSAGE_TYPE output;
+
     //.... do something with the input and generate the output...
 
     twistMsg.linear.x = 0;
     twistMsg.angular.z = 1;
     //pub_.publish(msg);1
     pub_.publish(twistMsg);
+    //writeToFile(); 
   }
 
   void getCamCallback_cv (const opencv_apps::FaceArrayStamped::ConstPtr& msg)
   {
-    //msg->data.c_str();
+
     if(msg->faces.size() > 0) {
       ROS_INFO("I heard: [%s]", msg->header.frame_id.c_str());  
-      //PUBLISHED_MESSAGE_TYPE output;
+
       //.... do something with the input and generate the output...
 
       twistMsg.linear.x = 1;
       twistMsg.angular.z = 1;
       //pub_.publish(msg);1
       pub_.publish(twistMsg);
+      command = "echo 350 | tee /dev/rtmotor_raw_*\n";
+      writeToFile();
     }
+    else{
+      twistMsg.linear.x = -1;
+      twistMsg.angular.z = 1;
+      //pub_.publish(msg);1
+      pub_.publish(twistMsg);
+      command = "echo 0 | tee /dev/rtmotor_raw_*\n";
+      writeToFile();
+    }
+    
   }
 
   
@@ -58,6 +77,15 @@ private:
   ros::Publisher pub_;
   ros::Subscriber sub_, sub_cv;
   geometry_msgs::Twist twistMsg;
+  std::string command;
+
+  void writeToFile() {
+
+    ofstream myfile;
+    myfile.open ("/home/roverpc-01/catkin_ws/src/cam_to_turtle/www/index.html");
+    myfile << command;
+    myfile.close();
+  }
 
 };//End of class SubscribeAndPublish
 
