@@ -9,6 +9,12 @@
 #include <fstream>
 using namespace std;
 
+#include <random>
+
+std::random_device dev;
+std::mt19937 rng(dev());
+std::uniform_int_distribution<std::mt19937::result_type> dist400(1,400);
+
 class SubscribeAndPublish
 {
 public:
@@ -27,7 +33,8 @@ public:
     twistMsg.linear.x = 0; twistMsg.linear.y = 0; twistMsg.linear.z = 0;
     twistMsg.angular.x = 0; twistMsg.angular.y = 0; twistMsg.angular.z = 0;
 
-    command = "none";
+    left_command = "none";
+    right_command = "none";
     writeToFile();
   }
 
@@ -57,7 +64,10 @@ public:
       twistMsg.angular.z = 1;
       //pub_.publish(msg);1
       pub_.publish(twistMsg);
-      command = "echo 350 | tee /dev/rtmotor_raw_*\n";
+      //command = "echo 350 | tee /dev/rtmotor_raw_*\n";
+      //command = "echo `echo 440 > /dev/rtbuzzer0`\n";
+      left_command = "440\n";
+      right_command = "440\n";
       writeToFile();
     }
     else{
@@ -65,7 +75,10 @@ public:
       twistMsg.angular.z = 1;
       //pub_.publish(msg);1
       pub_.publish(twistMsg);
-      command = "echo 0 | tee /dev/rtmotor_raw_*\n";
+      //command = "echo 0 | tee /dev/rtmotor_raw_*\n";
+      //command = "echo `echo 440 > /dev/rtbuzzer0`\n";
+      left_command = "440\n";
+      right_command = "440\n";
       writeToFile();
     }
     
@@ -77,16 +90,30 @@ private:
   ros::Publisher pub_;
   ros::Subscriber sub_, sub_cv;
   geometry_msgs::Twist twistMsg;
-  std::string command;
+  std::string left_command, right_command;
 
   void writeToFile() {
 
     ofstream myfile;
-    myfile.open ("/home/roverpc-01/catkin_ws/src/cam_to_turtle/www/index.html");
-    myfile << command;
+    //myfile.open ("/home/roverpc-01/catkin_ws/src/cam_to_turtle/www/index.html");
+    //myfile.open ("/tmp/roswww/index.html");
+    //myfile << command;
+    //myfile << dist400(rng) ;
+    //myfile.close();
+
+    //myfile.open ("/home/roverpc-01/catkin_ws/src/cam_to_turtle/www/index.html");
+    myfile.open ("/tmp/left.html");
+    //myfile << left_command;
+    myfile << dist400(rng) ;
+    myfile.close();
+
+    //myfile.open ("/home/roverpc-01/catkin_ws/src/cam_to_turtle/www/index.html");
+    myfile.open ("/tmp/right.html");
+    //myfile << right_command;
+    myfile << dist400(rng) ;
     myfile.close();
   }
-
+  
 };//End of class SubscribeAndPublish
 
 int main(int argc, char **argv)
